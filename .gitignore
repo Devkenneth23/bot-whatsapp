@@ -1,0 +1,9 @@
+node_modules/
+sesion/
+.wwebjs_auth/
+.wwebjs_cache/
+*.log
+.env
+package-lock.json
+public/uploads/
+.local-chromium/

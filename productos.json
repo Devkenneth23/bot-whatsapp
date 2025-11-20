@@ -1,0 +1,40 @@
+{
+  "servicios": [
+    {
+      "id": "1",
+      "nombre": "Consulta Legal",
+      "precio": "₡20,000",
+      "descripcion": "Asesoría legal personalizada de 1 hora",
+      "imagen": "consulta.jpg"
+    },
+    {
+      "id": "2", 
+      "nombre": "Divorcio",
+      "precio": "₡25,000",
+      "descripcion": "Trámite completo de divorcio en 30 días",
+      "imagen": "divorcio.jpg"
+    },
+    {
+      "id": "3",
+      "nombre": "Redacción de Contratos",
+      "precio": "₡50,000",
+      "descripcion": "Elaboración de todo tipo de contratos legales",
+      "imagen": "contratos.jpg"
+    }
+  ],
+  
+  "preguntas_frecuentes": [
+    {
+      "pregunta": "¿Cuánto cuesta una consulta?",
+      "respuesta": "Nuestras consultas tienen un costo de ₡20,000 por hora."
+    },
+    {
+      "pregunta": "¿Cuánto tarda un divorcio?",
+      "respuesta": "Un divorcio express puede completarse en 30 días hábiles."
+    },
+    {
+      "pregunta": "¿Trabajan fines de semana?",
+      "respuesta": "Atendemos sábados de 9am a 2pm. Domingos cerrado."
+    }
+  ]
+}

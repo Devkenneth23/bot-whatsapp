@@ -1,0 +1,83 @@
+{
+  "citas": [
+    {
+      "id": 1762400743169,
+      "cliente": "50689119779@c.us",
+      "nombre": "Nicole calvo gonzales",
+      "servicio": {
+        "id": "2",
+        "nombre": "Divorcio",
+        "precio": "₡25,000",
+        "descripcion": "Trámite completo de divorcio en 30 días",
+        "imagen": "divorcio.jpg"
+      },
+      "fecha": "07/11/2025",
+      "hora": "2:00 PM",
+      "fechaCreacion": "2025-11-06T03:45:43.169Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": 1763172834733,
+      "cliente": "15075351990524@lid",
+      "nombre": "Ethel M.Moreno",
+      "servicio": {
+        "id": "1",
+        "nombre": "Consulta Legal",
+        "precio": "₡20,000",
+        "descripcion": "Asesoría legal personalizada de 1 hora",
+        "imagen": "consulta.jpg"
+      },
+      "fecha": "18/11/2025",
+      "hora": "2:00 PM",
+      "fechaCreacion": "2025-11-15T02:13:54.733Z",
+      "estado": "confirmada"
+    }
+  ],
+  "horarios_disponibles": {
+    "lunes": [
+      "9:00 AM",
+      "10:00 AM",
+      "11:00 AM",
+      "2:00 PM",
+      "3:00 PM",
+      "4:00 PM"
+    ],
+    "martes": [
+      "9:00 AM",
+      "10:00 AM",
+      "11:00 AM",
+      "2:00 PM",
+      "3:00 PM",
+      "4:00 PM"
+    ],
+    "miercoles": [
+      "9:00 AM",
+      "10:00 AM",
+      "11:00 AM",
+      "2:00 PM",
+      "3:00 PM",
+      "4:00 PM"
+    ],
+    "jueves": [
+      "9:00 AM",
+      "10:00 AM",
+      "11:00 AM",
+      "2:00 PM",
+      "3:00 PM",
+      "4:00 PM"
+    ],
+    "viernes": [
+      "9:00 AM",
+      "10:00 AM",
+      "11:00 AM",
+      "2:00 PM",
+      "3:00 PM",
+      "4:00 PM"
+    ],
+    "sabado": [
+      "9:00 AM",
+      "10:00 AM",
+      "11:00 AM"
+    ]
+  }
+}
