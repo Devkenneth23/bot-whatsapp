@@ -14,83 +14,151 @@ import {
   Bot,
   BarChart3,
   Menu,
-  X
+  X,
+  Moon,
+  Sun,
+  Sparkles
 } from 'lucide-react';
 import { logout } from '@/lib/api';
+import { useTheme } from '@/contexts/ThemeContext';
+import NotificationSystem from '@/components/NotificationSystem';
 
 export default function DashboardLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const [user, setUser] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [logoUrl, setLogoUrl] = useState(null);
+  const { theme, toggleTheme } = useTheme();
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const token = Cookies.get('token');
-    const userCookie = Cookies.get('user');
-
+    
     if (!token) {
       router.push('/login');
-    } else if (userCookie) {
-      setUser(JSON.parse(userCookie));
+      return;
     }
+    
+    const userCookie = Cookies.get('user');
+    if (userCookie) {
+      try {
+        const userData = JSON.parse(userCookie);
+        setUser(userData);
+      } catch (error) {
+        console.error('Error parsing user cookie:', error);
+        Cookies.remove('user');
+        router.push('/login');
+      }
+    }
+
+    // Cargar logo
+    loadLogo();
   }, [router]);
+
+  const loadLogo = async () => {
+    try {
+      const token = Cookies.get('token');
+      const response = await fetch('http://localhost:3000/api/config/logo', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.logo_path) {
+          setLogoUrl(`http://localhost:3000${data.logo_path}`);
+        }
+      }
+    } catch (error) {
+      console.error('Error cargando logo:', error);
+    }
+  };
 
   const handleLogout = () => {
     logout();
   };
 
-  const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
-    { icon: Calendar, label: 'Citas', href: '/dashboard/citas' },
-    { icon: Users, label: 'Clientes', href: '/dashboard/clientes' },
-    { icon: Briefcase, label: 'Servicios', href: '/dashboard/servicios' },
-    { icon: BarChart3, label: 'Estadísticas', href: '/dashboard/estadisticas' },
-    { icon: Bot, label: 'Control Bot', href: '/dashboard/bot' },
-    { icon: Settings, label: 'Configuración', href: '/dashboard/config' },
+  // Todos los items del menú con sus roles permitidos
+  const allMenuItems = [
+    { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard', roles: ['admin', 'empleado'] },
+    { icon: Calendar, label: 'Citas', href: '/dashboard/citas', roles: ['admin', 'empleado'] },
+    { icon: Users, label: 'Clientes', href: '/dashboard/clientes', roles: ['admin', 'empleado'] },
+    { icon: Briefcase, label: 'Servicios', href: '/dashboard/servicios', roles: ['admin', 'empleado'] },
+    { icon: BarChart3, label: 'Estadísticas', href: '/dashboard/estadisticas', roles: ['admin'] },
+    { icon: Bot, label: 'Control Bot', href: '/dashboard/bot', roles: ['admin'] },
+    { icon: Settings, label: 'Configuración', href: '/dashboard/config', roles: ['admin'] },
   ];
+
+  // Filtrar items según el rol del usuario
+  const menuItems = allMenuItems.filter(item => 
+    item.roles.includes(user?.rol)
+  );
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 transition-colors duration-300">
+      <NotificationSystem />
+      
       {/* Mobile Menu Button */}
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-2 bg-white rounded-lg shadow-lg"
+          className="p-3 backdrop-blur-xl bg-white/80 dark:bg-slate-800/80 border border-white/60 dark:border-slate-700/60 rounded-xl shadow-lg"
         >
-          {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+          {sidebarOpen ? <X size={24} className="text-slate-700 dark:text-slate-300" /> : <Menu size={24} className="text-slate-700 dark:text-slate-300" />}
         </button>
       </div>
 
-      {/* Sidebar */}
+      {/* Sidebar Premium */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 w-72 backdrop-blur-2xl bg-white/40 dark:bg-slate-900/40 border-r border-white/60 dark:border-slate-700/60 shadow-2xl transform transition-transform duration-300 lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="h-full flex flex-col">
-          {/* Header */}
-          <div className="p-6 border-b">
-            <h1 className="text-xl font-bold text-gray-800">Panel Admin</h1>
-            <p className="text-sm text-gray-600 mt-1">Consultorio Legal</p>
+          {/* Header con gradiente */}
+          <div className="p-6 border-b border-white/60 dark:border-slate-700/60 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 dark:from-blue-500/20 dark:via-purple-500/20 dark:to-pink-500/20">
+            <div className="flex items-center space-x-3 mb-2">
+              {logoUrl ? (
+                <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg bg-white dark:bg-slate-800 p-1">
+                  <img 
+                    src={logoUrl} 
+                    alt="Logo" 
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              ) : (
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <Sparkles className="w-5 h-5 text-white" />
+                </div>
+              )}
+              <div>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
+                  Panel Admin
+                </h1>
+                <p className="text-xs text-slate-600 dark:text-slate-400">Sistema de Gestión</p>
+              </div>
+            </div>
           </div>
 
-          {/* User Info */}
-          <div className="p-4 border-b bg-blue-50">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+          {/* User Info Premium */}
+          <div className="p-4 border-b border-white/60 dark:border-slate-700/60">
+            <div className="flex items-center space-x-3 p-3 rounded-xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-500/20 dark:to-purple-500/20">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
                 {user.nombre?.charAt(0) || 'A'}
               </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-800">{user.nombre}</p>
-                <p className="text-xs text-gray-600">{user.rol}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
+                  {user.nombre}
+                </p>
+                <p className="text-xs text-slate-600 dark:text-slate-400 truncate">{user.rol}</p>
               </div>
             </div>
           </div>
@@ -106,34 +174,63 @@ export default function DashboardLayout({ children }) {
                   key={item.href}
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                  className={`group flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-300 ${
                     isActive
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/50 dark:shadow-blue-500/30'
+                      : 'text-slate-700 dark:text-slate-300 hover:bg-white/60 dark:hover:bg-slate-800/60 hover:shadow-md'
                   }`}
                 >
-                  <Icon size={20} />
+                  <div className={`p-2 rounded-lg ${
+                    isActive 
+                      ? 'bg-white/20' 
+                      : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-200 dark:group-hover:bg-slate-700'
+                  } transition-colors`}>
+                    <Icon size={20} />
+                  </div>
                   <span className="font-medium">{item.label}</span>
+                  {isActive && (
+                    <div className="ml-auto w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                  )}
                 </Link>
               );
             })}
           </nav>
 
-          {/* Logout Button */}
-          <div className="p-4 border-t">
+          {/* Theme Toggle & Logout */}
+          <div className="p-4 border-t border-white/60 dark:border-slate-700/60 space-y-2">
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="flex items-center justify-center space-x-3 px-4 py-3 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-white/60 dark:hover:bg-slate-800/60 w-full transition-all group"
+            >
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-200 dark:group-hover:bg-slate-700 transition-colors">
+                {theme === 'dark' ? (
+                  <Sun size={20} className="text-amber-500" />
+                ) : (
+                  <Moon size={20} className="text-slate-700 dark:text-slate-300" />
+                )}
+              </div>
+              <span className="font-medium flex-1 text-left">
+                {theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro'}
+              </span>
+            </button>
+
+            {/* Logout Button */}
             <button
               onClick={handleLogout}
-              className="flex items-center space-x-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 w-full transition-colors"
+              className="flex items-center justify-center space-x-3 px-4 py-3 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 w-full transition-all group"
             >
-              <LogOut size={20} />
-              <span className="font-medium">Cerrar Sesión</span>
+              <div className="p-2 rounded-lg bg-red-50 dark:bg-red-900/20 group-hover:bg-red-100 dark:group-hover:bg-red-900/40 transition-colors">
+                <LogOut size={20} />
+              </div>
+              <span className="font-medium flex-1 text-left">Cerrar Sesión</span>
             </button>
           </div>
         </div>
       </aside>
 
       {/* Main Content */}
-      <div className="lg:pl-64">
+      <div className="lg:pl-72 min-h-screen">
         <main className="p-6 lg:p-8">
           {children}
         </main>
@@ -142,7 +239,7 @@ export default function DashboardLayout({ children }) {
       {/* Overlay for mobile */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden transition-opacity"
           onClick={() => setSidebarOpen(false)}
         />
       )}

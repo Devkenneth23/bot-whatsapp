@@ -1,9 +1,9 @@
 node_modules/
-sesion/
-.wwebjs_auth/
-.wwebjs_cache/
-*.log
 .env
+database/*.db
+database/clients/*.db
+public/uploads/*
+backups/*
+*.log
+.DS_Store
 package-lock.json
-public/uploads/
-.local-chromium/

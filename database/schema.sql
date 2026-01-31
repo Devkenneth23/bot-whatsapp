@@ -32,6 +32,10 @@ CREATE TABLE IF NOT EXISTS citas (
     hora TEXT NOT NULL,
     estado TEXT DEFAULT 'confirmada',
     notas TEXT,
+    recordatorio_enviado INTEGER DEFAULT 0,
+    recordatorio_enviado_at DATETIME,
+    segundo_recordatorio_enviado INTEGER DEFAULT 0,
+    segundo_recordatorio_enviado_at DATETIME,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (cliente_id) REFERENCES clientes(id),
@@ -71,6 +75,10 @@ CREATE TABLE IF NOT EXISTS configuracion (
     clave TEXT UNIQUE NOT NULL,
     valor TEXT NOT NULL,
     tipo TEXT DEFAULT 'texto',
+    google_drive_email TEXT,
+    google_drive_token TEXT,
+    google_drive_refresh_token TEXT,
+    backup_auto_drive INTEGER DEFAULT 0,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

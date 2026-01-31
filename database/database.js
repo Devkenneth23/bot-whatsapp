@@ -103,11 +103,25 @@ class DatabaseManager {
     }
 
     // CLIENTES
-    async getOrCreateCliente(whatsappId) {
+    async getOrCreateCliente(whatsappId, numeroReal = null) {
         let cliente = await this.get('SELECT * FROM clientes WHERE whatsapp_id = ?', [whatsappId]);
         
         if (!cliente) {
-            const telefono = whatsappId.replace('@c.us', '').replace('@lid', '');
+            // Usar el número real si se proporcionó, sino limpiar el whatsappId
+            let telefono;
+            if (numeroReal) {
+                telefono = numeroReal.replace(/\D/g, '').substring(0, 15);
+            } else {
+                telefono = whatsappId
+                    .replace('@c.us', '')
+                    .replace('@lid', '')
+                    .replace('@s.whatsapp.net', '')
+                    .replace('@g.us', '');
+                telefono = telefono.replace(/\D/g, '').substring(0, 15);
+            }
+            
+            console.log(`📞 Nuevo cliente - WhatsApp ID: ${whatsappId} → Teléfono: ${telefono}`);
+            
             const result = await this.run(
                 'INSERT INTO clientes (whatsapp_id, telefono) VALUES (?, ?)',
                 [whatsappId, telefono]
@@ -146,8 +160,8 @@ class DatabaseManager {
     // CITAS
     async createCita(data) {
         const result = await this.run(
-            'INSERT INTO citas (cliente_id, servicio_id, fecha, hora, notas) VALUES (?, ?, ?, ?, ?)',
-            [data.cliente_id, data.servicio_id, data.fecha, data.hora, data.notas || null]
+            'INSERT INTO citas (cliente_id, servicio_id, fecha, hora, notas, estado) VALUES (?, ?, ?, ?, ?, ?)',
+            [data.cliente_id, data.servicio_id, data.fecha, data.hora, data.notas || null, 'pendiente']
         );
         
         await this.run('UPDATE clientes SET total_citas = total_citas + 1 WHERE id = ?', [data.cliente_id]);
@@ -225,13 +239,63 @@ class DatabaseManager {
         return !cita;
     }
 
-    // HORARIOS
-    async getHorariosByDia(dia) {
-        return await this.all(
-            'SELECT * FROM horarios_disponibles WHERE dia_semana = ? AND activo = 1 ORDER BY hora',
-            [dia.toLowerCase()]
+    async getCitasFuturasByCliente(clienteId) {
+        const hoy = new Date().toISOString().split('T')[0];
+        return await this.all(`
+            SELECT c.*, 
+                   s.nombre as servicio_nombre, s.precio as servicio_precio
+            FROM citas c
+            JOIN servicios s ON c.servicio_id = s.id
+            WHERE c.cliente_id = ? 
+            AND c.fecha >= ?
+            AND c.estado NOT IN ('cancelada', 'completada')
+            ORDER BY c.fecha, c.hora
+        `, [clienteId, hoy]);
+    }
+
+    async updateCita(id, data) {
+        return await this.run(
+            'UPDATE citas SET fecha = ?, hora = ?, notas = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            [data.fecha, data.hora, data.notas || null, id]
         );
     }
+
+    async cancelarCita(id, motivo = null) {
+        const notas = motivo ? `Cancelada por cliente. Motivo: ${motivo}` : 'Cancelada por cliente';
+        return await this.run(
+            'UPDATE citas SET estado = ?, notas = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            ['cancelada', notas, id]
+        );
+    }
+
+    // HORARIOS
+async createHorario(data) {
+        const result = await this.run(
+            'INSERT INTO horarios_disponibles (dia_semana, hora) VALUES (?, ?)',
+            [data.dia.toLowerCase(), data.hora]
+        );
+        return result.lastID;
+    }
+
+// PREGUNTAS FRECUENTES (FAQs) - AGREGAR AL FINAL, antes de close()
+async createFAQ(data) {
+    const result = await this.run(
+        'INSERT INTO preguntas_frecuentes (pregunta, respuesta) VALUES (?, ?)',
+        [data.pregunta, data.respuesta]
+    );
+    return result.lastID;
+}
+
+async updateFAQ(id, data) {
+    return await this.run(
+        'UPDATE preguntas_frecuentes SET pregunta = ?, respuesta = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        [data.pregunta, data.respuesta, id]
+    );
+}
+
+async deleteFAQ(id) {
+    return await this.run('UPDATE preguntas_frecuentes SET activo = 0 WHERE id = ?', [id]);
+}
 
     async getAllHorarios() {
         return await this.all(`
@@ -251,11 +315,36 @@ class DatabaseManager {
         `);
     }
 
-    async createHorario(dia, hora) {
-        return await this.run(
-            'INSERT INTO horarios_disponibles (dia_semana, hora) VALUES (?, ?)',
-            [dia.toLowerCase(), hora]
+    async getHorariosByDia(dia) {
+        return await this.all(
+            'SELECT * FROM horarios_disponibles WHERE dia_semana = ? AND activo = 1 ORDER BY hora',
+            [dia.toLowerCase()]
         );
+    }
+
+    // Obtener horarios disponibles para una fecha específica (filtrando ocupados)
+    async getHorariosDisponiblesPorFecha(fecha, diaSemana) {
+        // Obtener todos los horarios configurados para ese día de la semana
+        const horariosConfigurados = await this.all(
+            'SELECT hora FROM horarios_disponibles WHERE dia_semana = ? AND activo = 1 ORDER BY hora',
+            [diaSemana.toLowerCase()]
+        );
+
+        // Obtener horarios ya ocupados en esa fecha específica
+        const horariosOcupados = await this.all(
+            "SELECT hora FROM citas WHERE fecha = ? AND estado != 'cancelada'",
+            [fecha]
+        );
+
+        // Crear Set de horas ocupadas para búsqueda rápida
+        const ocupados = new Set(horariosOcupados.map(h => h.hora));
+
+        // Filtrar solo los disponibles
+        const disponibles = horariosConfigurados
+            .filter(h => !ocupados.has(h.hora))
+            .map(h => h.hora);
+
+        return disponibles;
     }
 
     async deleteHorario(id) {

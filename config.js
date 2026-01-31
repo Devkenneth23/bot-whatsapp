@@ -11,52 +11,47 @@ module.exports = {
         domingo: "Cerrado"
     },
     
-    // ===== 🕐 HORARIO INTELIGENTE (nuevo sistema automático) =====
+    // ===== 🕐 HORARIO INTELIGENTE =====
     horarioInteligente: {
-        activo: true, // Cambiar a false para desactivar y que funcione 24/7
-        
-        // Horarios en formato 24h (HH:MM)
+        activo: true,
         horarios: {
             lunesViernes: {
                 apertura: "09:00",
-                cierre: "17:00", // 5:00 PM
+                cierre: "17:00",
                 cerrado: false
             },
             sabado: {
                 apertura: "09:00",
-                cierre: "14:00", // 2:00 PM
+                cierre: "14:00",
                 cerrado: false
             },
             domingo: {
                 apertura: "00:00",
                 cierre: "00:00",
-                cerrado: true // Cerrado todo el día
+                cerrado: true
             }
         },
-        
-        // Zona horaria (importante para servidores en otros países)
         zonaHoraria: "America/Costa_Rica"
     },
     
     // ===== UBICACIÓN =====
     direccion: "Barrio Chorotega, Nicoya #123, Guanacaste, Costa Rica",
-    linkMapa: "https://maps.google.com/?q=tu-ubicacion", // Reemplazar con link real
+    linkMapa: "https://maps.app.goo.gl/pebBpG8ggnpZy1187",
     
     // ===== MENSAJES PERSONALIZADOS =====
     mensajeBienvenida: "¡Hola! Soy el asistente virtual de {negocio}. ¿En qué puedo ayudarte hoy?",
-    
-    mensajeFueraHorario: "Actualmente estamos fuera de horario. Te responderemos en cuanto abramos. Horario: {horarios}",
+    mensajeFueraHorario: "Actualmente estamos fuera de horario. Te responderemos en cuanto abramos.",
     
     // ===== WHATSAPP DE CONTACTO HUMANO =====
     numeroAsesor: "+50684784921",
     
     // ===== OPCIONES DEL MENÚ =====
-    // Puedes activar/desactivar opciones cambiando true/false
     opciones: {
-        verServicios: true,      // Mostrar catálogo/servicios
-        agendar: true,           // Agendar cita
-        ubicacion: true,         // Mostrar ubicación
-        horarios: true,          // Mostrar horarios
-        faq: true                // Preguntas frecuentes
+        verServicios: true,
+        precios: false,
+        agendar: true,
+        ubicacion: true,
+        horarios: true,
+        faq: true
     }
 };
